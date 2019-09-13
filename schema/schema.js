@@ -1,7 +1,8 @@
 const graphql=require('graphql');
 const _=require('lodash');
-const Book=require('../models/book');
-const Author=require('../models/author');
+const Materiel=require('../models/materiel');
+const User=require('../models/user');
+
 
 
 
@@ -12,19 +13,27 @@ const {GraphQLObjectType,
        GraphQLID,
        GraphQLInt,
        GraphQLList,
-        GraphQLNonNull}=graphql;
+        GraphQLNonNull,
+        GraphQLBoolean,
+        GraphQLFloat}=graphql;
 
 
-const BookType= new GraphQLObjectType({
-name:'Book',
+const MaterielType= new GraphQLObjectType({
+name:'Materiel',
 fields:()=>({
 id:{ type: GraphQLID},
-genre:{type:GraphQLString},
-name:{type:GraphQLString},
-author:{
- type:AuthorType,
+marque:{type:GraphQLString},
+reference_model:{type:GraphQLString},
+annee:{type:GraphQLInt},
+puissance:{type:GraphQLString},
+nombre_heures:{type:GraphQLInt},
+Etat_general:{type:GraphQLString},
+Pneus_avant:{type:GraphQLString},
+imgBytedata:{type:GraphQLString},
+user:{
+ type:UserType,
  resolve(parent,args){
-   return Author.findById(parent.authorId);
+   return User.findById(parent.userId);
  }
 
 }
@@ -32,16 +41,17 @@ author:{
 })
 
 
-const AuthorType= new GraphQLObjectType({
-    name:'Author',
+const UserType= new GraphQLObjectType({
+    name:'User',
     fields:()=>({
-    id:{ type: GraphQLID},
+    id:{type:GraphQLID},
     name:{type:GraphQLString},
-    age:{type:GraphQLInt},
-    books:{
-      type:new GraphQLList(BookType),
+    password:{type:GraphQLString},
+    isAdmin:{type:GraphQLBoolean},
+    materiels:{
+      type:new GraphQLList(MaterielType),
       resolve(parent,args){
-        return Book.find({authorId:parent.id})
+        return Materiel.find({userId:parent.id})
       }
 
 
@@ -54,33 +64,33 @@ const RootQuery=new GraphQLObjectType({
 name:'RootQueryType',
 fields:{
 
-book:{
-  type:BookType,
+materiel:{
+  type:MaterielType,
   args:{id:{type:GraphQLID}},
   resolve(parent,args){
-   return Book.findById(args.id);
+   return Materiel.findById(args.id);
 
   }
 },
-author:{
-type:AuthorType ,
+user:{
+type:UserType ,
 args:{id:{type:GraphQLID}},
 resolve(parent,args){
- return Author.findById(args.id);
+ return User.findById(args.id);
 
 }
 },
-  books:{
-    type:new GraphQLList(BookType),
+  materiels:{
+    type:new GraphQLList(MaterielType),
     resolve(parent,args){
-      return Book.find({});
+      return Materiel.find({});
 
     }
 
-  },authors:{
-    type:new GraphQLList(AuthorType),
+  },users:{
+    type:new GraphQLList(UserType),
     resolve(parent,args){
-     return Author.find({});
+     return User.find({});
 
     }
 
@@ -94,35 +104,53 @@ resolve(parent,args){
 const Mutation = new GraphQLObjectType({
 name:'Mutation',
 fields:{
-addAuthor:{
- type:AuthorType ,
+addUser:{
+ type:UserType ,
  args:{
  name:{type:new GraphQLNonNull(GraphQLString)},
- age:{type:new GraphQLNonNull(GraphQLInt)}
+ password:{type:new GraphQLNonNull(GraphQLString)},
+ isAdmin:{type:new GraphQLNonNull(GraphQLBoolean)},
  }, 
  resolve(parent,args){
-  let author=new Author({
+  let user=new User({
     name:args.name,
-    age:args.age
+    password:args.password,
+    isAdmin:args.isAdmin
+
   });
 
-  return  author.save();
+  return  user.save();
  }
  },
- addBook:{
-  type:BookType,
+ updateAuthor:{
+  
+ },
+ addMateriel:{
+  type:MaterielType,
    args:{
-    name:{type:new GraphQLNonNull(GraphQLString)},
-    genre:{type:new GraphQLNonNull(GraphQLString)},
-    authorId:{type:new GraphQLNonNull(GraphQLID)}
+    marque:{type:new GraphQLNonNull(GraphQLString)},
+    reference_model:{type:new GraphQLNonNull(GraphQLString)},
+    annee:{type:new GraphQLNonNull(GraphQLInt)},   
+    puissance:{type:new GraphQLNonNull(GraphQLString)},
+    nombre_heures:{type:new GraphQLNonNull(GraphQLInt)},
+    Etat_general:{type:new GraphQLNonNull(GraphQLString)}, 
+    Pneus_avant:{type:new GraphQLNonNull(GraphQLString)},
+    imgBytedata:{type:new GraphQLNonNull(GraphQLString)},
+    userId:{type:new GraphQLNonNull(GraphQLID)}
    },
      resolve(parent,args){
-       let book=new Book({
-       name:args.name,
-       genre:args.genre,
-       authorId:args.authorId
+       let materiel=new Materiel({
+        marque:args.marque,
+        reference_model:args.reference_model,
+        annee:args.annee,
+        puissance:args.puissance,
+        nombre_heures:args.nombre_heures,
+        Etat_general:args.Etat_general,
+        Pneus_avant:args.Pneus_avant,
+        imgBytedata:args.imgBytedata,
+        userId:args.userId
        });
-      return book.save();
+      return materiel.save();
      }
  }
 }

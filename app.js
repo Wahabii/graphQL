@@ -9,7 +9,7 @@ const app=express();
 
 //connect to mlab database
 
-mongoose.connect('mongodb+srv://malikovic:123456789m@cluster0-rkwtx.azure.mongodb.net/test?retryWrites=true&w=majority')
+module.exports.db=mongoose.connect('mongodb+srv://malikovic:123456789m@cluster0-rkwtx.azure.mongodb.net/test?retryWrites=true&w=majority')
 
 ,{ useUnifiedTopology: true };
 mongoose.connection.once('open',()=> 
